@@ -1,4 +1,4 @@
-from flask import Flask, render_template, g, request, session
+from flask import Flask, render_template, g, request, session, redirect, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 from database import get_db
 import os
@@ -87,6 +87,12 @@ def unanswered():
 @app.route("/users")
 def users():
     return render_template("users.html")
+
+
+@app.route("/logout")
+def logout():
+    session.pop("user", None)
+    return redirect(url_for("index"))
 
 
 if __name__ == "__main__":
