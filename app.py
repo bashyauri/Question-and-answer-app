@@ -94,10 +94,20 @@ def answer():
 
 @app.route("/ask", methods=["GET", "POST"])
 def ask():
-    if request.method == "POST":
-        return f"Question: {request.form['question']}, Expert ID: {request.form['expert']} "
     user = get_current_user()
     db = get_db()
+    if request.method == "POST":
+        db.execute(
+            "insert into questions (questions_text,asked_by_id,expert_id) values (?,?,?)",
+            [
+                request.form["question"],
+                user["id"],
+                request.form["expert"],
+            ],
+        )
+        db.commit()
+        return f"<h1>Question: {request.form['question']}, Expert ID: {request.form['expert']} </h1>"
+
     expert_cur = db.execute("select id,name from users where expert == 1")
     expert_results = expert_cur.fetchall()
     return render_template("ask.html", user=user, experts=expert_results)
