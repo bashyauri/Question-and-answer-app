@@ -54,7 +54,8 @@ def register():
             ],
         )
         db.commit()
-        return "<h1>User Created</h1>"
+        session["user"] = request.form["name"]
+        return redirect(url_for("index"))
 
     return render_template("register.html", user=user)
 
@@ -72,7 +73,7 @@ def login():
         user_result = user_cur.fetchone()
         if check_password_hash(user_result["password"], password):
             session["user"] = user_result["name"]
-            return "<h1>The password is correct</h1>"
+            return redirect(url_for("index"))
         else:
             return "<h1>The password is incorrect</h1>"
 
@@ -91,10 +92,15 @@ def answer():
     return render_template("answer.html", user=user)
 
 
-@app.route("/ask")
+@app.route("/ask", methods=["GET", "POST"])
 def ask():
+    if request.method == "POST":
+        return f"Question: {request.form['question']}, Expert ID: {request.form['expert']} "
     user = get_current_user()
-    return render_template("ask.html", user=user)
+    db = get_db()
+    expert_cur = db.execute("select id,name from users where expert == 1")
+    expert_results = expert_cur.fetchall()
+    return render_template("ask.html", user=user, experts=expert_results)
 
 
 @app.route("/unanswered")
@@ -106,7 +112,19 @@ def unanswered():
 @app.route("/users")
 def users():
     user = get_current_user()
-    return render_template("users.html", user=user)
+
+    db = get_db()
+    users_cur = db.execute("SELECT id,name,expert,admin FROM users")
+    users_results = users_cur.fetchall()
+    return render_template("users.html", user=user, users=users_results)
+
+
+@app.route("/promote/<int:user_id>")
+def promote(user_id):
+    db = get_db()
+    db.execute("update users set expert = 1 where id= ?", [user_id])
+    db.commit()
+    return redirect(url_for("users"))
 
 
 @app.route("/logout")
