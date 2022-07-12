@@ -1,6 +1,6 @@
 from flask import Flask, render_template, g, request, session, redirect, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
-from database import get_db
+from database import get_db, connect_db
 import os
 
 
@@ -104,14 +104,14 @@ def login():
 def question(question_id):
     user = get_current_user()
     db = get_db()
-    question_cur = db.execute(
+    db.execute(
         """select questions.question_text,questions.answer,askers.name as asker_name,experts.name as expert_name 
         from questions join users as askers on 
         askers.id = questions.asked_by_id join users as experts 
         on experts.id = questions.expert_id where questions.id = %s""",
         (question_id,),
     )
-    my_question = question_cur.fetchone()
+    my_question = db.fetchone()
     return render_template("question.html", user=user, question=my_question)
 
 
@@ -120,7 +120,7 @@ def answer(question_id):
     user = get_current_user()
     if not user:
         return redirect(url_for("login"))
-    if user.expert == 0:
+    if not user["expert"]:
         return redirect(url_for("index"))
     db = get_db()
     if request.method == "POST":
@@ -128,13 +128,11 @@ def answer(question_id):
             "update questions set answer = %s where id = %s",
             (request.form["answer"], question_id),
         )
-        db.commit()
+
         return redirect(url_for("unanswered"))
 
-    question_cur = db.execute(
-        "select id,question_text from questions where id = %s", (question_id,)
-    )
-    my_question = question_cur.fetchone()
+    db.execute("select id,question_text from questions where id = %s", (question_id,))
+    my_question = db.fetchone()
     return render_template("answer.html", user=user, question=my_question)
 
 
@@ -153,11 +151,11 @@ def ask():
                 request.form["expert"],
             ),
         )
-        db.commit()
+
         return redirect(url_for("index"))
 
-    expert_cur = db.execute("select id,name from users where expert == 1")
-    expert_results = expert_cur.fetchall()
+    db.execute("select id,name from users where expert = True")
+    expert_results = db.fetchall()
     return render_template("ask.html", user=user, experts=expert_results)
 
 
@@ -166,17 +164,17 @@ def unanswered():
     user = get_current_user()
     if not user:
         return redirect(url_for("login"))
-    if user.expert == 0:
+    if not user.expert:
         return redirect(url_for("index"))
     db = get_db()
-    questions_cur = db.execute(
+    db.execute(
         """select users.name,
                             questions.id ,
                             questions.question_text from questions
                             join users on users.id = questions.asked_by_id where answer is null and expert_id = %s""",
-        (user.id),
+        (user.id,),
     )
-    questions = questions_cur.fetchall()
+    questions = db.fetchall()
     return render_template("unanswered.html", user=user, questions=questions)
 
 
@@ -185,12 +183,12 @@ def users():
     user = get_current_user()
     if not user:
         return redirect(url_for("login"))
-    if user.admin == 0:
+    if not user["admin"]:
         return redirect(url_for("index"))
 
     db = get_db()
-    users_cur = db.execute("SELECT id,name,expert,admin FROM users")
-    users_results = users_cur.fetchall()
+    db.execute("SELECT id,name,expert,admin FROM users")
+    users_results = db.fetchall()
     return render_template("users.html", user=user, users=users_results)
 
 
@@ -199,11 +197,11 @@ def promote(user_id):
     user = get_current_user()
     if not user:
         return redirect(url_for("login"))
-    if user.admin == 0:
+    if not user["admin"]:
         return redirect(url_for("index"))
     db = get_db()
-    db.execute("update users set expert = 1 where id= %s", (user_id,))
-    db.commit()
+    db.execute("update users set expert = True where id= %s", (user_id,))
+
     return redirect(url_for("users"))
 
 

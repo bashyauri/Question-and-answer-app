@@ -19,7 +19,7 @@ def get_db():
 
 def connect_db():
     conn = psycopg2.connect(
-        "postgres://lflwrrstlfdaea:cd05de365d7c2b8fed9f1f8d981a7ddf69ae2169fd17ba6dd4ebb36ceeab504c@ec2-3-219-229-143.compute-1.amazonaws.com:5432/d84ekiql9ei0d4",
+        "postgres://kvhixpjtgalfbx:51d0fa4f5a7fe248ef4e656a75b64281789bdc01b58f380ef0c0da5366cded58@ec2-34-235-198-25.compute-1.amazonaws.com:5432/d9b7s11o35d2j7",
         cursor_factory=DictCursor,
     )
     conn.autocommit = True
@@ -45,8 +45,4 @@ def init_db():
 
 def init_admin():
     db = connect_db()
-    db[1].execute(
-        "update users set admin = True where name = %s", ("basharu83@gmail.com",)
-    )
-    db[1].close()
-    db[0].close()
+    db[1].execute("update users set admin = True where name = %s", ("admin",))
