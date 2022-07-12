@@ -100,7 +100,7 @@ PyYAML==5.4.1
 pyzmq==23.0.0
 requests==2.27.1
 scipy==1.8.1
-search==1.0
+
 six==1.16.0
 SQLAlchemy==1.4.29
 sqlparse==0.4.2
