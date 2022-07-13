@@ -172,7 +172,7 @@ def unanswered():
                             questions.id ,
                             questions.question_text from questions
                             join users on users.id = questions.asked_by_id where answer is null and expert_id = %s""",
-        (user["id"]),
+        (user["id"],),
     )
     questions = db.fetchall()
     return render_template("unanswered.html", user=user, questions=questions)
