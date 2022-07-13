@@ -131,7 +131,9 @@ def answer(question_id):
 
         return redirect(url_for("unanswered"))
 
-    db.execute("select id,question_text from questions where id = %s", (question_id,))
+    question_cur = db.execute(
+        "select id,question_text from questions where id = %s", (question_id,)
+    )
     my_question = db.fetchone()
     return render_template("answer.html", user=user, question=my_question)
 
@@ -147,15 +149,15 @@ def ask():
             "insert into questions (question_text,asked_by_id,expert_id) values (%s,%s,%s)",
             (
                 request.form["question"],
-                user.id,
+                user["id"],
                 request.form["expert"],
             ),
         )
 
         return redirect(url_for("index"))
 
-    db.execute("select id,name from users where expert = True")
-    expert_results = db.fetchall()
+    expert_cur = db.execute("select id,name from users where expert == 1")
+    expert_results = expert_cur.fetchall()
     return render_template("ask.html", user=user, experts=expert_results)
 
 
@@ -172,7 +174,7 @@ def unanswered():
                             questions.id ,
                             questions.question_text from questions
                             join users on users.id = questions.asked_by_id where answer is null and expert_id = %s""",
-        (user.id,),
+        (user["id"],),
     )
     questions = db.fetchall()
     return render_template("unanswered.html", user=user, questions=questions)
@@ -183,7 +185,7 @@ def users():
     user = get_current_user()
     if not user:
         return redirect(url_for("login"))
-    if not user["admin"]:
+    if user["admin"]:
         return redirect(url_for("index"))
 
     db = get_db()
@@ -197,7 +199,7 @@ def promote(user_id):
     user = get_current_user()
     if not user:
         return redirect(url_for("login"))
-    if not user["admin"]:
+    if user["admin"]:
         return redirect(url_for("index"))
     db = get_db()
     db.execute("update users set expert = True where id= %s", (user_id,))
