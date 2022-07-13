@@ -123,14 +123,14 @@ def question(question_id):
 
     db.execute(
         """select 
-                                     questions.question_text, 
-                                     questions.answer_text, 
-                                     askers.name as asker_name, 
-                                     experts.name as expert_name 
-                                 from questions 
-                                 join users as askers on askers.id = questions.asked_by_id 
-                                 join users as experts on experts.id = questions.expert_id 
-                                 where questions.id = %s""",
+                                    questions.question_text, 
+                                    questions.answer_text, 
+                                    askers.name as asker_name, 
+                                    experts.name as expert_name 
+                                from questions 
+                                join users as askers on askers.id = questions.asked_by_id 
+                                join users as experts on experts.id = questions.expert_id 
+                                where questions.id = %s""",
         (question_id,),
     )
 
