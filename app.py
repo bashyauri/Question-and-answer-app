@@ -5,7 +5,9 @@ import os
 
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = os.urandom(24)
+app.config[
+    "SECRET_KEY"
+] = b"\xb9\xa9X~~\xc5q\x91+#\xadP\x1f\xaf$=\x96\x95\xc4\xc10;\xe3B"
 
 
 @app.teardown_appcontext
