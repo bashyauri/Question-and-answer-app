@@ -164,7 +164,7 @@ def unanswered():
     user = get_current_user()
     if not user:
         return redirect(url_for("login"))
-    if not user.expert:
+    if not user["expert"]:
         return redirect(url_for("index"))
     db = get_db()
     db.execute(
