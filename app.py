@@ -154,7 +154,7 @@ def ask():
 
         return redirect(url_for("index"))
 
-    db.execute("select id,name from users where expert == True")
+    db.execute("select id,name from users where expert = True")
     expert_results = db.fetchall()
     return render_template("ask.html", user=user, experts=expert_results)
 
